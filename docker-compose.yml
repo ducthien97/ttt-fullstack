@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/ttt
+      SPRING_DATASOURCE_USERNAME: ttt_admin
+      SPRING_DATASOURCE_PASSWORD: ttt_pw # For development/demo purpose only, do NOT run in production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - app
+
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ttt
+      POSTGRES_USER: ttt_admin
+      POSTGRES_PASSWORD: ttt_pw # For development/demo purpose only, do NOT run in production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ttt -d ttt"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
