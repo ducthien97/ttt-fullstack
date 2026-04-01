@@ -10,7 +10,7 @@ import java.util.UUID;
 @Table(name = "game_players")
 public class GamePlayer {
     @Embeddable
-    static class GamePlayerId implements Serializable {
+    public static class GamePlayerId implements Serializable {
         @Column(name = "game_session_id")
         private UUID gameSessionId;
 
