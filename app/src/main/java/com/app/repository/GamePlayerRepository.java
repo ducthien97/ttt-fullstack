@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface GamePlayerRepository extends JpaRepository<GamePlayer, GamePlayer.GamePlayerId> {
     List<GamePlayer> findByIdGameSessionId(UUID gameSessionId);
+
 }

@@ -1,14 +1,20 @@
 package com.app.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "game_players")
 public class GamePlayer {
+    @Setter
+    @Getter
     @Embeddable
     public static class GamePlayerId implements Serializable {
         @Column(name = "game_session_id")
@@ -35,19 +41,4 @@ public class GamePlayer {
     @Column(name = "symbol", nullable = false, length = 1)
     private char symbol;
 
-    public void setId(GamePlayerId id) {
-        this.id = id;
-    }
-
-    public GamePlayerId getId() {
-        return id;
-    }
-
-    public void setSymbol(char symbol) {
-        this.symbol = symbol;
-    }
-
-    public char getSymbol() {
-        return symbol;
-    }
 }
