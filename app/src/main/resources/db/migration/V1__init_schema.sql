@@ -12,7 +12,8 @@ CREATE TABLE game_sessions (
     current_turn UUID,
     FOREIGN KEY (current_turn) REFERENCES players(id),
     winner_id UUID,
-    FOREIGN KEY (winner_id) REFERENCES players(id)
+    FOREIGN KEY (winner_id) REFERENCES players(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE game_players (
@@ -21,5 +22,6 @@ CREATE TABLE game_players (
     player_id UUID,
     FOREIGN KEY (player_id) REFERENCES players(id),
     symbol VARCHAR(1) NOT NULL,
-    PRIMARY KEY (game_session_id, player_id)
+    PRIMARY KEY (game_session_id, player_id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
