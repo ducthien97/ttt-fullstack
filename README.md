@@ -16,6 +16,7 @@ TTT (TicTacToe) is a full stack web application where a user can play the game o
 + Backend: Spring Boot/Java
 + DB: PostgreSQL
 + Containerization: Docker
++ Frontend-Backend Communication Protocol: chose HTTP polling over WebSockets for simplicity and reliability in a local development environment. For a production deployment with concurrent games at scale, WebSockets or SSE would be more appropriate given lower latency requirements.
 
 ## Important
 + docker credentials are to be stored in .env run `cp .env.example .env` before running `docker compose up` 
