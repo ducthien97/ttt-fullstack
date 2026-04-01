@@ -16,3 +16,6 @@ TTT (TicTacToe) is a full stack web application where a user can play the game o
 + Backend: Spring Boot/Java
 + DB: PostgreSQL
 + Containerization: Docker
+
+## Important
++ docker credentials are to be stored in .env run `cp .env.example .env` before running `docker compose up` 

@@ -12,6 +12,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: on-failure
+
 
   webapp:
     build:
@@ -20,7 +28,9 @@ services:
     ports:
       - "5173:5173"
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    restart: on-failure
 
   db:
     image: postgres:17
@@ -28,12 +38,12 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: ttt
-      POSTGRES_USER: ttt_admin
-      POSTGRES_PASSWORD: ttt_pw # For development/demo purpose only, do NOT run in production
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ttt -d ttt"]
+      test: ["CMD-SHELL", "pg_isready -U ttt_admin -d ttt"]
       interval: 5s
       timeout: 5s
       retries: 5
