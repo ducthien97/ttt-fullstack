@@ -21,7 +21,7 @@ CREATE TABLE game_players (
     FOREIGN KEY (game_session_id) REFERENCES game_sessions(id),
     player_id UUID,
     FOREIGN KEY (player_id) REFERENCES players(id),
-    symbol VARCHAR(1) NOT NULL,
+    symbol CHAR(1) NOT NULL,
     PRIMARY KEY (game_session_id, player_id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

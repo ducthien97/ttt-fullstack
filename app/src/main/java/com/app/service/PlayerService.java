@@ -1,5 +1,6 @@
 package com.app.service;
 
+import com.app.dto.PlayerDTO;
 import com.app.model.Player;
 import com.app.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,13 +35,10 @@ public class PlayerService {
         return  playerRepository.findById(id).orElse(null);
     }
 
-//    commented out for now but will be used to create players from the endpoint later
-//    private PlayerDTO toDtoMapper(Player player){
-//        PlayerDTO playerDTO = new PlayerDTO();
-//        playerDTO.setId(player.getId());
-//        playerDTO.setName(player.getName());
-//        return playerDTO;
-//    }
-
-
+    public PlayerDTO toDto(Player player){
+        PlayerDTO playerDTO = new PlayerDTO();
+        playerDTO.setId(player.getId());
+        playerDTO.setName(player.getName());
+        return playerDTO;
+    }
 }

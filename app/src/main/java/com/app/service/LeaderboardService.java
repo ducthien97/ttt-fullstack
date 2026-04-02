@@ -20,7 +20,7 @@ public class LeaderboardService {
         for (Object[] resultRow : topFiveRawResult){
             LeaderboardEntry entry = new LeaderboardEntry();
             entry.setPlayerName(resultRow[0].toString());
-            entry.setWinCount(((java.math.BigInteger) resultRow[1]).intValue());
+            entry.setWinCount(((Long) resultRow[1]).intValue());
 
             leaderboardEntries.add(entry);
         }
