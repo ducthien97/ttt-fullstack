@@ -13,29 +13,20 @@ import java.util.UUID;
 public class PlayerService {
     private final PlayerRepository playerRepository;
 
-    public Player findOrCreatePlayer(String playerName){
-
-        Player existingPlayer = findExistingPlayerByName(playerName);
-
-        if (existingPlayer != null){
-            return existingPlayer;
-        }
-        else {
-            Player player = new Player();
-            player.setName(playerName);
-            return playerRepository.save(player);
-        }
+    public Player findOrCreatePlayer(String playerName) {
+        return playerRepository.findByName(playerName)
+                .orElseGet(() -> {
+                    Player player = new Player();
+                    player.setName(playerName);
+                    return playerRepository.save(player);
+                });
     }
 
-    private Player findExistingPlayerByName (String name){
-        return playerRepository.findByName(name).orElse(null);
+    public Player findExistingPlayer(UUID id) {
+        return playerRepository.findById(id).orElse(null);
     }
 
-    public Player findExistingPlayer (UUID id) {
-        return  playerRepository.findById(id).orElse(null);
-    }
-
-    public PlayerDTO toDto(Player player){
+    public PlayerDTO toDto(Player player) {
         PlayerDTO playerDTO = new PlayerDTO();
         playerDTO.setId(player.getId());
         playerDTO.setName(player.getName());

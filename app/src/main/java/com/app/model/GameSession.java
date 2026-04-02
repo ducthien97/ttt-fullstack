@@ -22,7 +22,6 @@ public class GameSession extends BaseEntity {
     @Column(name = "connect_code", nullable = false, length = 5)
     private String connectCode;
 
-
     @ManyToOne
     @JoinColumn(name = "current_turn")
     private Player currentTurn;

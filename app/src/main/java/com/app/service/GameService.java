@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import static com.app.game.GameLogic.*;
 
@@ -22,134 +23,122 @@ public class GameService {
     private final GameSessionRepository gameSessionRepository;
     private final GamePlayerRepository gamePlayerRepository;
 
-    private static final Character X = 'X';
-    private static final Character O = 'O';
+    private static final char X = 'X';
+    private static final char O = 'O';
+    private static final Random RANDOM = new Random();
 
+    public GameSessionResponseDTO createGame(String playerName) {
+        Player player = playerService.findOrCreatePlayer(playerName);
 
+        GameSession gameSession = new GameSession();
+        gameSession.setStatus(Status.WAITING);
+        gameSession.setBoard(new int[9]);
+        gameSession.setConnectCode(generateUniqueConnectCode());
+        gameSession.setCurrentTurn(player);
+        GameSession saved = gameSessionRepository.save(gameSession);
 
+        createGamePlayer(saved.getId(), player.getId(), X);
 
-    public GameSessionResponseDTO createGame(String playerName){
-        Player playerFound = playerService.findOrCreatePlayer(playerName);
-
-        int[] emptyBoard = {0,0,0,0,0,0,0,0,0};
-        String connectCode = generateConnectCode();
-
-        while (gameSessionRepository.findByConnectCode(connectCode).isPresent()){
-            connectCode = generateConnectCode();
-        }
-
-        GameSession newGameSession = new GameSession();
-        newGameSession.setStatus(Status.WAITING);
-        newGameSession.setBoard(emptyBoard);
-        newGameSession.setConnectCode(connectCode);
-        newGameSession.setCurrentTurn(playerFound);
-        GameSession savedGameSession = gameSessionRepository.save(newGameSession);
-
-        GamePlayer newGamePlayer = new GamePlayer();
-        GamePlayer.GamePlayerId newGamePlayerId = new GamePlayer.GamePlayerId();
-        newGamePlayerId.setGameSessionId(savedGameSession.getId());
-        newGamePlayerId.setPlayerId(playerFound.getId());
-        newGamePlayer.setId(newGamePlayerId);
-        newGamePlayer.setSymbol(X);
-        gamePlayerRepository.save(newGamePlayer);
-
-        return toDto(savedGameSession, X);
+        return toDto(saved, X);
     }
 
-    public GameSessionResponseDTO joinGame(String playerName, String gameAccessCode){
-        Player playerFound = playerService.findOrCreatePlayer(playerName);
-        GameSession gameSessionFound = gameSessionRepository.findByConnectCode(gameAccessCode).orElseThrow(() -> new RuntimeException("Game session does not exist"));
-        if (gameSessionFound.getCurrentTurn().getId().equals(playerFound.getId())) {
+    public GameSessionResponseDTO joinGame(String playerName, String gameAccessCode) {
+        Player player = playerService.findOrCreatePlayer(playerName);
+        GameSession gameSession = findSessionByCode(gameAccessCode);
+
+        if (gameSession.getCurrentTurn().getId().equals(player.getId())) {
             throw new RuntimeException("You cannot join your own game");
-        } else if  (gameSessionFound.getStatus().equals(Status.ACTIVE)) {
+        } else if (gameSession.getStatus().equals(Status.ACTIVE)) {
             throw new RuntimeException("Only two players can join one game");
-        }  else if (gameSessionFound.getStatus().equals(Status.COMPLETE)){
+        } else if (gameSession.getStatus().equals(Status.COMPLETE)) {
             throw new RuntimeException("This game has expired. You can no longer join");
         }
 
-        gameSessionFound.setStatus(Status.ACTIVE);
-        GameSession savedGameSession = gameSessionRepository.save(gameSessionFound);
+        gameSession.setStatus(Status.ACTIVE);
+        GameSession saved = gameSessionRepository.save(gameSession);
+        createGamePlayer(saved.getId(), player.getId(), O);
 
-
-        GamePlayer newGamePlayer = new GamePlayer();
-        GamePlayer.GamePlayerId newGamePlayerId = new GamePlayer.GamePlayerId();
-        newGamePlayerId.setGameSessionId(gameSessionFound.getId());
-        newGamePlayerId.setPlayerId(playerFound.getId());
-        newGamePlayer.setId(newGamePlayerId);
-        newGamePlayer.setSymbol(O);
-        gamePlayerRepository.save(newGamePlayer);
-
-        return toDto(savedGameSession, O);
+        return toDto(saved, O);
     }
 
-    public GameSessionResponseDTO getGame (String accessCode) {
-        GameSession currentSession = gameSessionRepository
-                .findByConnectCode(accessCode)
-                .orElseThrow(() -> new RuntimeException("Game session does not exist"));
-
-        return toDto(currentSession, null);
+    public GameSessionResponseDTO getGame(String accessCode) {
+        return toDto(findSessionByCode(accessCode), null);
     }
 
-    public GameSessionResponseDTO makeMove (String accessCode, String playerName, int moveIndex){
-        GameSession foundGameSession = gameSessionRepository.findByConnectCode(accessCode).orElseThrow(() -> new RuntimeException("Game session does not exist"));
-        Player foundPlayer = playerService.findOrCreatePlayer(playerName);
+    public GameSessionResponseDTO makeMove(String accessCode, String playerName, int moveIndex) {
+        GameSession gameSession = findSessionByCode(accessCode);
+        Player player = playerService.findOrCreatePlayer(playerName);
 
-        if (!foundGameSession.getStatus().equals(Status.ACTIVE)){
+        if (!gameSession.getStatus().equals(Status.ACTIVE)) {
             throw new RuntimeException("This game is not valid");
         }
-
-        int[] board = foundGameSession.getBoard();
-        if (!isValidMove(board, moveIndex)){
+        if (!isValidMove(gameSession.getBoard(), moveIndex)) {
             throw new RuntimeException("Invalid move");
         }
-
-        if (!foundGameSession.getCurrentTurn().getId().equals(foundPlayer.getId())){
+        if (!gameSession.getCurrentTurn().getId().equals(player.getId())) {
             throw new RuntimeException("It's not your turn");
         }
 
-        List<GamePlayer> gamePlayers = gamePlayerRepository.findByIdGameSessionId(foundGameSession.getId());
-        GamePlayer currentGamePlayer;
-        GamePlayer otherGamePlayer;
+        List<GamePlayer> gamePlayers = gamePlayerRepository.findByIdGameSessionId(gameSession.getId());
+        GamePlayer currentGamePlayer = gamePlayers.getFirst().getId().getPlayerId().equals(player.getId())
+                ? gamePlayers.getFirst()
+                : gamePlayers.getLast();
+        GamePlayer otherGamePlayer = currentGamePlayer == gamePlayers.getFirst()
+                ? gamePlayers.getLast()
+                : gamePlayers.getFirst();
 
-        if (gamePlayers.getFirst().getId().getPlayerId().equals(foundPlayer.getId())){
-            currentGamePlayer = gamePlayers.getFirst();
-            otherGamePlayer = gamePlayers.getLast();
+        int[] board = gameSession.getBoard();
+        int playerNum = currentGamePlayer.getSymbol() == X ? 1 : 2;
+        board[moveIndex] = playerNum;
+        gameSession.setBoard(board);
+
+        if (checkWinner(board, playerNum)) {
+            gameSession.setStatus(Status.COMPLETE);
+            gameSession.setWinner(player);
+        } else if (checkDraw(board)) {
+            gameSession.setStatus(Status.COMPLETE);
         } else {
-            otherGamePlayer = gamePlayers.getFirst();
-            currentGamePlayer = gamePlayers.getLast();
+            gameSession.setCurrentTurn(playerService.findExistingPlayer(otherGamePlayer.getId().getPlayerId()));
         }
-        char currentGamePlayerSymbol = currentGamePlayer.getSymbol();
-        board[moveIndex] = currentGamePlayerSymbol == X ? 1 : 2;
-        foundGameSession.setBoard(board);
-        if (checkWinner(board, currentGamePlayerSymbol == X ? 1 : 2)){
-            foundGameSession.setStatus(Status.COMPLETE);
-            foundGameSession.setWinner(foundPlayer);
-        }
-        else if (checkDraw(board)){
-            foundGameSession.setStatus(Status.COMPLETE);
-        }
-        else {
-            foundGameSession.setCurrentTurn(playerService.findExistingPlayer(otherGamePlayer.getId().getPlayerId()));
-        }
-        return toDto(gameSessionRepository.save(foundGameSession), null);
+
+        return toDto(gameSessionRepository.save(gameSession), null);
     }
 
-    private String generateConnectCode(){
-        int randomNumber = new Random().nextInt(100000);
-        return String.format("%05d", randomNumber);
+    private void createGamePlayer(UUID gameSessionId, UUID playerId, char symbol) {
+        GamePlayer.GamePlayerId gamePlayerId = new GamePlayer.GamePlayerId();
+        gamePlayerId.setGameSessionId(gameSessionId);
+        gamePlayerId.setPlayerId(playerId);
+
+        GamePlayer gamePlayer = new GamePlayer();
+        gamePlayer.setId(gamePlayerId);
+        gamePlayer.setSymbol(symbol);
+        gamePlayerRepository.save(gamePlayer);
     }
 
-    private GameSessionResponseDTO toDto (GameSession gameSession, Character playerSymbol){
+    private GameSession findSessionByCode(String code) {
+        return gameSessionRepository.findByConnectCode(code)
+                .orElseThrow(() -> new RuntimeException("Game session does not exist"));
+    }
+
+    private String generateUniqueConnectCode() {
+        String code;
+        do {
+            code = String.format("%05d", RANDOM.nextInt(100000));
+        } while (gameSessionRepository.findByConnectCode(code).isPresent());
+        return code;
+    }
+
+    private GameSessionResponseDTO toDto(GameSession gameSession, Character playerSymbol) {
         GameSessionResponseDTO dto = new GameSessionResponseDTO();
         dto.setId(gameSession.getId());
         dto.setBoard(gameSession.getBoard());
         dto.setStatus(gameSession.getStatus().name());
         dto.setConnectCode(gameSession.getConnectCode());
         dto.setPlayerSymbol(playerSymbol);
-        if (gameSession.getCurrentTurn() != null){
+        if (gameSession.getCurrentTurn() != null) {
             dto.setCurrentTurnPlayerName(gameSession.getCurrentTurn().getName());
         }
-        if (gameSession.getWinner() != null){
+        if (gameSession.getWinner() != null) {
             dto.setWinnerName(gameSession.getWinner().getName());
         }
         return dto;

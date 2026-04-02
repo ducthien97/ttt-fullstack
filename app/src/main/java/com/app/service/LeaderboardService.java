@@ -5,7 +5,6 @@ import com.app.repository.GameSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,17 +13,13 @@ public class LeaderboardService {
     private final GameSessionRepository gameSessionRepository;
 
     public List<LeaderboardEntry> getLeaderBoard() {
-        List<LeaderboardEntry> leaderboardEntries = new ArrayList<>();
-        List<Object[]> topFiveRawResult = gameSessionRepository.findTopFivePlayers();
-
-        for (Object[] resultRow : topFiveRawResult){
-            LeaderboardEntry entry = new LeaderboardEntry();
-            entry.setPlayerName(resultRow[0].toString());
-            entry.setWinCount(((Long) resultRow[1]).intValue());
-
-            leaderboardEntries.add(entry);
-        }
-
-        return leaderboardEntries;
+        return gameSessionRepository.findTopFivePlayers().stream()
+                .map(row -> {
+                    LeaderboardEntry entry = new LeaderboardEntry();
+                    entry.setPlayerName(row[0].toString());
+                    entry.setWinCount(((Long) row[1]).intValue());
+                    return entry;
+                })
+                .toList();
     }
 }
