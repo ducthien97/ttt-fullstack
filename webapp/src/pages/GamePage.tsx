@@ -2,6 +2,7 @@ import {useEffect} from "react";
 import {getGame, makeMove} from "@/api/gameApi.ts";
 import {useGameStore} from "@/store/gameStore.ts";
 import {useNavigate} from "react-router-dom";
+import {GameStatus} from "@/constants/gameStatus.ts";
 
 export default function GamePage() {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function GamePage() {
             return;
         }
 
-        if (currentGame?.status === 'COMPLETE') {
+        if (currentGame?.status === GameStatus.COMPLETE) {
             navigate('/result')
             return
         }
@@ -21,7 +22,7 @@ export default function GamePage() {
         const fetchGame = async () => {
             const game = await getGame(connectCode);
             setCurrentGame(game)
-            if (game.status === 'COMPLETE') {
+            if (game.status === GameStatus.COMPLETE) {
                 navigate('/result')
             }
         }
@@ -35,7 +36,7 @@ export default function GamePage() {
         if (currentGame && currentGame.board[moveIndex] === 0 && currentGame.currentTurnPlayerName === playerName) {
             const updatedGame = await makeMove(playerName, connectCode, moveIndex);
             setCurrentGame(updatedGame);
-            if (updatedGame.status === 'COMPLETE'){
+            if (updatedGame.status === GameStatus.COMPLETE){
                 navigate('/result');
             }
         }
@@ -54,11 +55,11 @@ export default function GamePage() {
         <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background">
             <h1 className="text-3xl font-bold text-foreground">Tic Tac Toe</h1>
             <p className="text-muted-foreground">Playing as <span className="font-bold text-foreground">{playerName}</span> ({playerSymbol})</p>
-            {currentGame?.status === 'WAITING' && (<div className="bg-yellow-100 text-yellow-800 border border-yellow-200 p-3 rounded-lg text-sm font-medium">
+            {currentGame?.status === GameStatus.WAITING && (<div className="bg-yellow-100 text-yellow-800 border border-yellow-200 p-3 rounded-lg text-sm font-medium">
                 Waiting for Player 2... Share this code: {connectCode}
             </div>)}
 
-            {currentGame?.status === 'ACTIVE' && (
+            {currentGame?.status === GameStatus.ACTIVE && (
                 <div className="bg-blue-100 text-blue-800 border border-blue-200 p-3 rounded-lg text-sm font-medium">
                     {currentGame.currentTurnPlayerName === playerName
                         ? "Your turn!"

@@ -1,3 +1,5 @@
+import type {GameStatus} from "@/constants/gameStatus.ts";
+
 export interface PlayerResponse {
     id: string
     name: string
@@ -10,7 +12,7 @@ export interface LeaderboardEntry {
 
 export interface GameSessionResponse {
     id: string
-    status: string
+    status: GameStatus
     board: number[]
     currentTurnPlayerName: string
     winnerName: string
