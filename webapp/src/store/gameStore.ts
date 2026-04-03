@@ -7,10 +7,12 @@ interface GameStore {
     connectCode: string
     currentGame: GameSessionResponse | null
 
-    setPlayerName: (name:string) => void
+    setPlayerName: (name: string) => void
     setPlayerSymbol: (symbol: 'X' | 'O' | null) => void
     setConnectCode: (code: string) => void
     setCurrentGame: (game: GameSessionResponse | null) => void,
+
+    resetGame: () => void,
 }
 
 export const useGameStore = create<GameStore>((set) => ({
@@ -25,4 +27,5 @@ export const useGameStore = create<GameStore>((set) => ({
     setPlayerSymbol: (symbol) => set({playerSymbol: symbol}),
     setConnectCode: (code) => set({connectCode: code}),
     setCurrentGame: (game) => set({currentGame: game}),
+    resetGame: () => set({currentGame: null, connectCode: '', playerSymbol: null})
 }))
