@@ -9,7 +9,10 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
         body: JSON.stringify(body),
     })
 
-    if (!res.ok) throw new Error (await res.text())
+    if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({ error: 'Something went wrong' }))
+        throw new Error(errorBody.error ?? 'Something went wrong')
+    }
 
     return res.json();
 }

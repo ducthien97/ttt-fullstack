@@ -1,73 +1,42 @@
-# React + TypeScript + Vite
+# TTT Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This frontend application allows users to play tic-tac-toe game in standard rules, users can create or join an existing game and compete with each others.
+Players connect to the same game using a 5-digit code generated when a game is created.
+Also users can see who's the current leaders with the most wins. 
 
-Currently, two official plugins are available:
+## Tech Stack
+- React — Main application logic
+- TypeScript — Type-safe programming language
+- Vite — Fast development server and build tool
+- shadcn/ui — Lightweight UI component library
+- Tailwind — Utility-first styling framework
+- Zustand — Lightweight state management
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Architecture Decisions
+- **Zustand vs Redux:** Zustand is more lightweight and modern, suitable for this project's complexity
+- **React Router vs Single Page:** Gives clear routes for different pages since they serve different purposes, easier to separate components by page
+- **HTTP Polling vs WebSockets:** Chose polling every 1 second over WebSockets for simplicity and reliability in a local development environment. For production at scale, WebSockets or SSE would provide lower latency.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Structure
+```
+src/
+├── api/          # Backend API interaction, separated by resource
+├── components/   # Reusable UI components (shadcn/ui)
+├── pages/        # Application pages
+│   ├── HomePage.tsx
+│   ├── GamePage.tsx
+│   ├── ResultPage.tsx
+│   └── LeaderboardPage.tsx
+├── store/        # Zustand global state
+└── assets/       # Static assets
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Running Locally
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Note: ensure the backend is running first (see /app README)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+npm install
+npm run dev
+
+Open http://localhost:5173 or http://localhost:5174

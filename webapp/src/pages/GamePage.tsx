@@ -41,6 +41,14 @@ export default function GamePage() {
         }
     };
 
+    if (!currentGame) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-muted-foreground">Loading game...</p>
+            </div>
+        )
+    }
+
     return (
 
         <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-background">

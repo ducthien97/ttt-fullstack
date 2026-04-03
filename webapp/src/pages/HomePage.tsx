@@ -94,14 +94,20 @@ export default function HomePage() {
                         <p className="text-muted-foreground font-medium">Enter your 5-digit code:</p>
                         <Input
                             value={connectCode}
-                            onChange={(e) => setConnectCode(e.target.value)}
+                            onChange={(e) => {
+                                setConnectCode(e.target.value)
+                                setBanner(null)
+                            }}
                             placeholder="00000"
                             maxLength={5}
                             className="text-center text-lg tracking-widest"
                         />
                         <div className="flex gap-2">
                             <Button onClick={handleOnSubmitJoinDialog} className="flex-1">Join</Button>
-                            <Button onClick={() => setShowJoinDialog(false)} variant="outline"
+                            <Button onClick={() => {
+                                setShowJoinDialog(false)
+                                setBanner(null)
+                            }} variant="outline"
                                     className="flex-1">Cancel</Button>
                         </div>
                     </div>
