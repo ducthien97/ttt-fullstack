@@ -5,3 +5,5 @@
 *.ipr
 out/
 .env
+.vite/
+start/
