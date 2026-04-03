@@ -17,8 +17,8 @@ TTT (TicTacToe) is a full stack web application where a user can play the game o
 
 ## Quick Start
 1. Clone the repository
-2. cp .env.example .env
-3. docker compose up --build
+2. `cp .env.example .env`
+3. `docker compose up --build`
 4. Open http://localhost:5173
 
 ## Database Schema
