@@ -1,7 +1,6 @@
-const defaultUrl = import.meta.env.BASE_URL;
 const defaultSpringUrl = "http://localhost:8081";
 
-const BASE_URL = defaultUrl ?? defaultSpringUrl;
+const BASE_URL = defaultSpringUrl;
 
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${BASE_URL}${path}`, {
